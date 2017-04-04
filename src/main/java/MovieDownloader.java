@@ -13,7 +13,7 @@ import java.util.Scanner;
  * Code adapted from Google.
  *
  * YOUR TASK: Add comments explaining how this code works!
- * 
+ *
  * @author Joel Ross & Kyungmin Lee
  */
 public class MovieDownloader {
@@ -23,11 +23,13 @@ public class MovieDownloader {
 		//construct the url for the omdbapi API
 		String urlString = "";
 		try {
+			// Encode special characters in movie title
 			urlString = "http://www.omdbapi.com/?s=" + URLEncoder.encode(movie, "UTF-8") + "&type=movie";
 		}catch(UnsupportedEncodingException uee){
 			return null;
 		}
 
+		// Initialize connection in case of connection errors
 		HttpURLConnection urlConnection = null;
 		BufferedReader reader = null;
 
@@ -35,21 +37,23 @@ public class MovieDownloader {
 
 		try {
 
-			URL url = new URL(urlString);
+			URL url = new URL(urlString); // Constructors url throws error if malformed
 
-			urlConnection = (HttpURLConnection) url.openConnection();
-			urlConnection.setRequestMethod("GET");
-			urlConnection.connect();
+			urlConnection = (HttpURLConnection) url.openConnection(); // call on parent of HttpURLConnection
+			urlConnection.setRequestMethod("GET"); // Set GET or POST
+			urlConnection.connect(); // Create a connection to the url => this is where many errors can happen
 
+			// Input Stream allows us to read in the url as bytes throught the buffer reader line by line
 			InputStream inputStream = urlConnection.getInputStream();
-			StringBuffer buffer = new StringBuffer();
-			if (inputStream == null) {
+			StringBuffer buffer = new StringBuffer(); // allows us to concat the entire file in memory
+			if (inputStream == null) { // if there is no content return null
 				return null;
 			}
+			// Iterable reader that reads in characters, arrays, and lines
 			reader = new BufferedReader(new InputStreamReader(inputStream));
 
-			String line = reader.readLine();
-			while (line != null) {
+			String line = reader.readLine(); // read in first line
+			while (line != null) { // iterate through entire url input stream object
 				buffer.append(line + "\n");
 				line = reader.readLine();
 			}
@@ -57,24 +61,24 @@ public class MovieDownloader {
 			if (buffer.length() == 0) {
 				return null;
 			}
-			String results = buffer.toString();
+			String results = buffer.toString(); // creates a searchable string
 			results = results.replace("{\"Search\":[","");
 			results = results.replace("]}","");
 			results = results.replace("},", "},\n");
 
-			movies = results.split("\n");
-		} 
+			movies = results.split("\n"); // parse each movie into an array
+		}
 		catch (IOException e) {
 			return null;
-		} 
+		}
 		finally {
 			if (urlConnection != null) {
-				urlConnection.disconnect();
+				urlConnection.disconnect(); // close connection
 			}
 			if (reader != null) {
 				try {
-					reader.close();
-				} 
+					reader.close(); // close buffer reader
+				}
 				catch (IOException e) {
 				}
 			}
@@ -84,13 +88,13 @@ public class MovieDownloader {
 	}
 
 
-	public static void main(String[] args) 
+	public static void main(String[] args)
 	{
 		Scanner sc = new Scanner(System.in);
 
 		boolean searching = true;
 
-		while(searching) {					
+		while(searching) {
 			System.out.print("Enter a movie name to search for or type 'q' to quit: ");
 			String searchTerm = sc.nextLine().trim();
 			if(searchTerm.toLowerCase().equals("q")){
